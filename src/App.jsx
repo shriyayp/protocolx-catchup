@@ -253,12 +253,13 @@ function App() {
 
                 {result.doFirst.length > 0 && (
                   <div className="animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-                    <DoFirst
-                    items={result.doFirst}
-                    userName={profile.name}
-                    aliases={aliasesArray}
-                    onViewInChat={(item) => setSourceTarget(item.messageIndex)}
-                  />
+                      <DoFirst
+                      items={result.doFirst}
+                      userName={profile.name}
+                      aliases={aliasesArray}
+                      onViewInChat={(item) => setSourceTarget(item.messageIndex)}
+                    />
+                  </div>
                 )}
 
                 <div className="space-y-3 animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
