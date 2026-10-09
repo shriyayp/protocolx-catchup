@@ -14,6 +14,7 @@ import LowSignalList from './components/LowSignalList.jsx'
 import PrivacyPanel from './components/PrivacyPanel.jsx'
 import EmptyState from './components/EmptyState.jsx'
 import ErrorBanner from './components/ErrorBanner.jsx'
+import SavedBriefs from './components/SavedBriefs.jsx'
 
 import { parseChat } from './services/chatParser.js'
 import { analyzeChat } from './services/analyzer.js'
@@ -181,21 +182,30 @@ function App() {
 
       <Header />
 
-      <main id="main" className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        {/* Hero */}
-        <div className="mb-8 sm:mb-10">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            <span className="chrome-text">What did I miss?</span>
-          </h2>
-          <p className="mt-2 max-w-lg text-sm text-slate-400 sm:text-base">
-            Load a group chat, enter your name, and get a ranked brief of what
-            matters — analysed entirely on your device.
-          </p>
+      <main id="main" className="relative z-10 mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-16 lg:px-10 lg:py-20">
+        <section className="mb-14 grid gap-10 lg:grid-cols-[1fr_300px] lg:items-end">
+          <div>
+            <p className="eyebrow mb-5">A clearer view of the conversations behind you</p>
+            <h2 className="hero-title text-slate-100">Catch up on <em>what matters.</em></h2>
+            <p className="mt-7 max-w-xl text-base leading-8 text-slate-400 sm:text-lg">
+              Find the decisions, deadlines, and conversations you missed — without reading every message.
+            </p>
+          </div>
+          <div className="hidden lg:block">
+            <div className="hero-rule mb-4" />
+            <p className="text-xs leading-6 text-slate-500">A focused brief from your group chat. Deterministic, private, and entirely on your device.</p>
+          </div>
+        </section>
+
+        <div className="mb-8 flex items-center gap-4">
+          <span className="eyebrow">Workspace</span>
+          <div className="hero-rule flex-1" />
+          <span className="text-[10px] uppercase tracking-[0.16em] text-slate-600">01 — 02</span>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,360px)_1fr]">
           {/* Setup column */}
-          <aside className="space-y-4">
+          <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
             <ChatSourcePanel onSource={handleSampleSource} selectedSampleId={selectedSampleId} />
             <ProfileForm value={profile} onChange={setProfile} presetUser={presetUser} />
             <CatchUpControls
@@ -219,11 +229,12 @@ function App() {
                 Analyse another conversation
               </button>
             )}
+            <SavedBriefs />
             <PrivacyPanel onClearSaved={handleClearSaved} />
           </aside>
 
           {/* Brief column */}
-          <section aria-live="polite" aria-label="Analysis results" className="space-y-4">
+          <section aria-live="polite" aria-label="Analysis results" className="min-w-0 space-y-5">
             {error && <ErrorBanner message={error} />}
 
             {info && !error && (
@@ -263,10 +274,11 @@ function App() {
                 )}
 
                 <div className="space-y-3 animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-                  <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-300">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-400" />
-                    All flagged messages
-                  </h2>
+                  <div className="flex items-center gap-3">
+                    <span className="eyebrow">02 / Your brief</span>
+                    <div className="hero-rule flex-1" />
+                  </div>
+                  <h2 className="text-2xl font-medium tracking-[-0.03em] text-slate-100">Everything that needs your attention.</h2>
                   <FilterChips
                     items={result.items}
                     active={activeFilter}
@@ -292,7 +304,7 @@ function App() {
       <footer className="relative z-10 border-t border-white/[0.04] py-6">
         <div className="mx-auto max-w-6xl px-4">
           <p className="text-center text-xs text-slate-600">
-            CatchUp runs entirely on your device. No data leaves your browser.
+            CatchUp analyzes raw chat on your device. Only saved brief summaries leave your browser.
           </p>
         </div>
       </footer>

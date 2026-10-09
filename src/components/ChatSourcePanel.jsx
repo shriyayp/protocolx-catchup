@@ -1,11 +1,8 @@
-/**
- * ChatSourcePanel — Glass tabs for samples, paste, upload.
- * Calls onSource(rawText, presetUser, presetSince) when a source is provided.
- */
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 import sampleChats from '../data/sampleChats.js'
 
-const MAX_BYTES = 2 * 1024 * 1024 // 2 MB
+const MAX_BYTES = 2 * 1024 * 1024
+const tones = ['violet', 'blue', 'green']
 
 function ChatSourcePanel({ onSource, selectedSampleId }) {
   const [tab, setTab] = useState('sample')
@@ -13,21 +10,15 @@ function ChatSourcePanel({ onSource, selectedSampleId }) {
   const [fileError, setFileError] = useState('')
   const fileRef = useRef(null)
 
-  const selectSample = (sample) => {
-    onSource(sample.rawText, sample.defaultUser, sample.defaultSince)
-  }
-
+  const selectSample = (sample) => onSource(sample.rawText, sample.defaultUser, sample.defaultSince)
   const handlePaste = () => {
-    if (pastedText.trim().length === 0) return
-    onSource(pastedText, null, null)
+    if (pastedText.trim()) onSource(pastedText, null, null)
   }
-
-  const handleFile = (e) => {
-    const file = e.target.files[0]
+  const handleFile = (event) => {
+    const file = event.target.files[0]
     if (!file) return
     setFileError('')
-
-    if (!file.name.endsWith('.txt')) {
+    if (!file.name.toLowerCase().endsWith('.txt')) {
       setFileError('Please select a .txt file.')
       return
     }
@@ -35,71 +26,64 @@ function ChatSourcePanel({ onSource, selectedSampleId }) {
       setFileError('File is too large. Maximum 2 MB.')
       return
     }
-
     const reader = new FileReader()
-    reader.onload = (ev) => {
-      onSource(ev.target.result, null, null)
-    }
+    reader.onload = (loadEvent) => onSource(loadEvent.target.result, null, null)
     reader.onerror = () => setFileError('Could not read the file.')
     reader.readAsText(file)
   }
 
-  const tabBtn = (id, label) => (
-    <button
-      role="tab"
-      aria-selected={tab === id}
-      onClick={() => setTab(id)}
-      className={`min-h-[40px] flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
-        tab === id
-          ? 'bg-white/10 text-slate-100 shadow-sm ring-1 ring-white/15'
-          : 'text-slate-400 hover:text-slate-200'
-      }`}
-    >
-      {label}
-    </button>
-  )
+  const tabs = [
+    ['sample', 'Samples'],
+    ['paste', 'Paste'],
+    ['upload', 'Upload'],
+  ]
 
   return (
-    <div className="glass p-4">
-      <label className="mb-3 block text-xs font-semibold uppercase tracking-wider text-slate-400">
-        Chat source
-      </label>
-
-      {/* Tabs */}
-      <div className="mb-4 flex gap-1 rounded-xl bg-black/20 p-1" role="tablist">
-        {tabBtn('sample', 'Samples')}
-        {tabBtn('paste', 'Paste')}
-        {tabBtn('upload', 'Upload')}
+    <section className="glass p-4 sm:p-5" aria-labelledby="source-heading">
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow">01 / Choose a source</p>
+          <h2 id="source-heading" className="mt-1 text-lg font-medium text-slate-100">Start with a conversation</h2>
+        </div>
+        <span className="hidden text-[10px] uppercase tracking-[0.16em] text-slate-500 sm:block">WhatsApp export</span>
       </div>
 
-      {/* Sample chats tab */}
+      <div className="mb-5 flex gap-1 rounded-xl border border-white/[0.08] bg-black/25 p-1" role="tablist" aria-label="Chat source type">
+        {tabs.map(([id, label]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={`min-h-[38px] flex-1 rounded-lg px-3 text-xs font-semibold transition-all ${tab === id ? 'bg-white/[0.13] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]' : 'text-slate-500 hover:text-slate-200'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {tab === 'sample' && (
-        <div className="space-y-2">
-          {sampleChats.map((s) => {
-            const msgCount = s.rawText.split('\n').filter((l) => l.trim()).length
-            const isSelected = selectedSampleId === s.id
+        <div className="grid gap-3">
+          {sampleChats.map((sample, index) => {
+            const msgCount = sample.rawText.split('\n').filter((line) => line.trim()).length
+            const isSelected = selectedSampleId === sample.id
             return (
               <button
-                key={s.id}
-                onClick={() => selectSample(s)}
-                className={`glass-interactive w-full rounded-xl px-4 py-3 text-left ${
-                  isSelected ? 'ring-1 ring-violet-400/40' : ''
-                }`}
+                key={sample.id}
+                onClick={() => selectSample(sample)}
+                data-tone={tones[index % tones.length]}
+                className={`sample-card glass-interactive w-full p-4 text-left ${isSelected ? 'is-selected' : ''}`}
+                aria-pressed={isSelected}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-slate-100">{s.title}</div>
-                    <div className="mt-0.5 text-xs text-slate-400">{s.tagline}</div>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                        {msgCount} messages
-                      </span>
-                      {isSelected && (
-                        <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300">
-                          Loaded
-                        </span>
-                      )}
-                    </div>
+                <div className="relative z-10 flex h-full flex-col justify-between gap-8">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="eyebrow text-[9px]">Conversation {String(index + 1).padStart(2, '0')}</span>
+                    {isSelected && <span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-emerald-200">Loaded</span>}
+                  </div>
+                  <div>
+                    <h3 className="text-[17px] font-medium tracking-[-0.02em] text-slate-100">{sample.title}</h3>
+                    <p className="mt-1 max-w-[230px] text-xs leading-5 text-slate-400">{sample.tagline}</p>
+                    <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">{msgCount} messages</p>
                   </div>
                 </div>
               </button>
@@ -108,55 +92,31 @@ function ChatSourcePanel({ onSource, selectedSampleId }) {
         </div>
       )}
 
-      {/* Paste tab */}
       {tab === 'paste' && (
-        <div>
+        <div className="animate-fade-in">
+          <label htmlFor="paste-chat" className="mb-2 block text-xs text-slate-400">Paste the exported chat text below.</label>
           <textarea
+            id="paste-chat"
             value={pastedText}
-            onChange={(e) => setPastedText(e.target.value)}
-            placeholder="Paste your WhatsApp export text here…"
-            aria-label="Paste chat text"
-            className="h-40 w-full rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-slate-200 placeholder-slate-500 focus:border-violet-400/40 focus:outline-none"
+            onChange={(event) => setPastedText(event.target.value)}
+            placeholder="Paste your WhatsApp export here…"
+            className="h-44 w-full resize-none rounded-xl border border-white/[0.11] bg-black/25 p-4 text-sm leading-6 text-slate-200 transition-colors focus:border-blue-300/50 focus:outline-none"
           />
-          <button
-            onClick={handlePaste}
-            disabled={pastedText.trim().length === 0}
-            className="mt-2 min-h-[44px] w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-200 transition-all hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Use pasted text
-          </button>
+          <button onClick={handlePaste} disabled={!pastedText.trim()} className="mt-3 min-h-[44px] w-full rounded-xl border border-white/15 bg-white/[0.07] px-4 text-sm font-semibold text-slate-200 transition hover:bg-white/[0.13] disabled:cursor-not-allowed disabled:opacity-40">Use pasted text</button>
         </div>
       )}
 
-      {/* Upload tab */}
       {tab === 'upload' && (
-        <div>
-          <div className="rounded-xl border border-dashed border-white/15 bg-black/20 px-4 py-6 text-center">
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".txt"
-              onChange={handleFile}
-              aria-label="Upload a .txt chat export file"
-              className="hidden"
-              id="file-upload"
-            />
-            <label
-              htmlFor="file-upload"
-              className="inline-block cursor-pointer rounded-lg border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-slate-200 transition-all hover:bg-white/10"
-            >
-              Choose .txt file
-            </label>
-            <p className="mt-3 text-xs text-slate-500">
-              WhatsApp export format. Max 2 MB.
-            </p>
+        <div className="animate-fade-in">
+          <div className="rounded-xl border border-dashed border-white/20 bg-black/20 px-4 py-10 text-center">
+            <input ref={fileRef} id="file-upload" type="file" accept=".txt" onChange={handleFile} className="hidden" aria-label="Upload a .txt chat export file" />
+            <label htmlFor="file-upload" className="inline-flex cursor-pointer rounded-xl border border-white/20 bg-white/[0.08] px-5 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/[0.14]">Choose .txt file</label>
+            <p className="mt-3 text-xs text-slate-500">WhatsApp export format · maximum 2 MB</p>
           </div>
-          {fileError && (
-            <p className="mt-2 text-xs text-red-400">{fileError}</p>
-          )}
+          {fileError && <p className="mt-3 text-xs text-red-300" role="alert">{fileError}</p>}
         </div>
       )}
-    </div>
+    </section>
   )
 }
 
