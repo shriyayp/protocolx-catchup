@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import './App.css'
 
 import Header from './components/Header.jsx'
@@ -16,6 +16,7 @@ import EmptyState from './components/EmptyState.jsx'
 import ErrorBanner from './components/ErrorBanner.jsx'
 import SavedBriefs from './components/SavedBriefs.jsx'
 import AiSummaryPanel from './components/AiSummaryPanel.jsx'
+import CinematicIntro from './components/CinematicIntro.jsx'
 
 import { parseChat } from './services/chatParser.js'
 import { analyzeChat } from './services/analyzer.js'
@@ -43,6 +44,8 @@ function App() {
   const [aiProgress, setAiProgress] = useState(null)
   const [aiError, setAiError] = useState('')
   const [aiConsent, setAiConsent] = useState(false)
+  const [showIntro, setShowIntro] = useState(true)
+  const completeIntro = useCallback(() => setShowIntro(false), [])
   const aiAbortRef = useRef(null)
   const aiJobIdRef = useRef(0)
   const topRef = useRef(null)
@@ -276,6 +279,8 @@ function App() {
 
   return (
     <div className="bg-midnight min-h-screen text-slate-200">
+      {showIntro && <CinematicIntro onComplete={completeIntro} />}
+
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-violet-600 focus:px-4 focus:py-2 focus:text-white"
