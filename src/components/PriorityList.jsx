@@ -1,16 +1,11 @@
 /**
  * PriorityList — Renders PriorityCards; handled items move to bottom.
  */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import PriorityCard from './PriorityCard.jsx'
 
 function PriorityList({ items, userName, aliases, onViewInChat }) {
   const [handledIds, setHandledIds] = useState(new Set())
-
-  // Reset handled state when a new analysis produces different item IDs
-  useEffect(() => {
-    setHandledIds(new Set())
-  }, [items])
 
   const toggleHandled = (id, isHandled) => {
     setHandledIds((prev) => {
