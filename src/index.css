@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-bright: rgba(255, 255, 255, 0.22);
+  --glass-blur: 18px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --accent: #a78bfa;
+  --accent-glow: rgba(167, 139, 250, 0.4);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #08080f;
+  color: #e2e8f0;
+}
+
+/* Deep near-black with ambient indigo/violet glow */
+.bg-midnight {
+  background-color: #08080f;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% 10%, rgba(99, 102, 241, 0.12), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 85% 20%, rgba(139, 92, 246, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 50% 90%, rgba(56, 189, 248, 0.07), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Iridescent ambient drift — very slow, very subtle */
+.bg-midnight::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle 400px at 30% 40%, rgba(167, 139, 250, 0.05), transparent),
+    radial-gradient(circle 300px at 70% 60%, rgba(56, 189, 248, 0.04), transparent),
+    radial-gradient(circle 200px at 50% 30%, rgba(232, 232, 240, 0.03), transparent);
+  animation: ambient-drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(20px, -10px) scale(1.05); }
+  100% { transform: translate(-15px, 15px) scale(0.98); }
+}
+
+/* Liquid glass surface */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+  position: relative;
+}
+
+/* Opaque fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass {
+    background: rgba(20, 20, 35, 0.92);
+  }
+}
+
+/* Glass with brighter border for interactive elements */
+.glass-interactive {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
+}
+
+.glass-interactive:hover {
+  border-color: var(--glass-border-bright);
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.glass-interactive:active {
+  transform: scale(0.99);
+}
+
+/* Chrome / liquid-metal accent text */
+.chrome-text {
+  background: linear-gradient(
+    135deg,
+    #e2e8f0 0%,
+    #cbd5e1 25%,
+    #c4b5fd 50%,
+    #e2e8f0 75%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Chrome gradient for the brand badge */
+.chrome-badge {
+  background: linear-gradient(
+    135deg,
+    #94a3b8 0%,
+    #c4b5fd 30%,
+    #e2e8f0 50%,
+    #a78bfa 70%,
+    #cbd5e1 100%
+  );
+  background-size: 200% 200%;
+  animation: chrome-shimmer 8s ease-in-out infinite;
+}
+
+@keyframes chrome-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Primary action button — specular chrome border */
+.btn-chrome {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(99, 102, 241, 0.18));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 4px 24px rgba(99, 102, 241, 0.25);
+  color: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+  transition: all 200ms ease;
+}
+
+.btn-chrome:hover {
+  border-color: rgba(196, 181, 253, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 4px 32px rgba(167, 139, 250, 0.4);
+}
+
+.btn-chrome:active {
+  transform: scale(0.99);
+}
+
+/* Light sweep on hover */
+.btn-chrome::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.12),
+    transparent
+  );
+  transition: left 600ms ease;
+}
+
+.btn-chrome:hover::after {
+  left: 120%;
+}
+
+/* Entrance animation for results */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 400ms ease-out forwards;
+}
+
+/* Focus ring — visible on dark glass */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Reduced motion: disable all animations and transitions */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .bg-midnight::before { animation: none; }
+  .chrome-badge { animation: none; }
+  .btn-chrome::after { display: none; }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
