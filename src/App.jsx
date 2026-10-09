@@ -45,10 +45,9 @@ function App() {
   const [aiConsent, setAiConsent] = useState(false)
   const aiAbortRef = useRef(null)
   const aiJobIdRef = useRef(0)
-  const setupRef = useRef(null)
+  const topRef = useRef(null)
   const resultsRef = useRef(null)
 
-  // Load saved name from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('catchup_profile')
@@ -56,7 +55,6 @@ function App() {
     } catch { /* ignore */ }
   }, [])
 
-  // Save name to localStorage
   useEffect(() => {
     if (profile.name || profile.aliases) {
       try { localStorage.setItem('catchup_profile', JSON.stringify(profile)) } catch { /* ignore */ }
@@ -98,7 +96,6 @@ function App() {
     setLastMessageTime(parsed.messages[parsed.messages.length - 1].timestamp)
   }
 
-  // Wrapper to pass sampleId from ChatSourcePanel
   const handleSampleSource = (text, user, sinceStr) => {
     const sample = sampleChats.find((s) => s.rawText === text)
     handleSource(text, user, sinceStr, sample?.id)
@@ -212,6 +209,25 @@ function App() {
     runAnalysis(parsed.messages, s.defaultUser, [], sinceDate)
   }
 
+  const goToStep = (step) => {
+    if (step === 1) {
+      setResult(null)
+      setAiSummary(null)
+      setAiError('')
+      setAiProgress(null)
+      setError('')
+      setInfo('')
+      setActiveFilter('all')
+      setSourceTarget(null)
+    }
+    requestAnimationFrame(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  const handleChangeConversation = () => {
+    handleReset()
+    requestAnimationFrame(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
   const handleNewAnalysis = () => {
     setResult(null)
     setAiSummary(null)
@@ -221,7 +237,7 @@ function App() {
     setInfo('')
     setActiveFilter('all')
     setSourceTarget(null)
-    requestAnimationFrame(() => setupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    requestAnimationFrame(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
   const handleReset = () => {
@@ -249,10 +265,14 @@ function App() {
   const hasDetails = profile.name.trim().length > 0 && Boolean(since)
   const activeStep = result || loading ? 3 : hasConversation ? 2 : 1
   const steps = [
-    { number: '01', label: 'Choose conversation', complete: hasConversation },
+    { number: '01', label: 'Conversation', complete: hasConversation },
     { number: '02', label: 'Your details', complete: hasDetails },
     { number: '03', label: 'Your brief', complete: Boolean(result) },
   ]
+
+  const showStep1 = activeStep === 1
+  const showStep2 = activeStep === 2
+  const showStep3 = activeStep === 3
 
   return (
     <div className="bg-midnight min-h-screen text-slate-200">
@@ -265,45 +285,62 @@ function App() {
 
       <Header />
 
-      <main id="main" className="relative z-10 mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-16 lg:px-10 lg:py-20">
-        <section className="mb-14 grid gap-10 lg:grid-cols-[1fr_300px] lg:items-end">
-          <div>
-            <p className="eyebrow mb-5">A clearer view of the conversations behind you</p>
-            <h2 className="hero-title text-slate-100">Catch up on <em>what matters.</em></h2>
-            <p className="mt-7 max-w-xl text-base leading-8 text-slate-400 sm:text-lg">
+      <main id="main" ref={topRef} className="relative z-10 mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-12 lg:py-16">
+        {/* Hero — compact, only on step 1 */}
+        {showStep1 && (
+          <section className="mb-10 text-center">
+            <p className="eyebrow mb-4">A clearer view of the conversations behind you</p>
+            <h1 className="hero-title text-slate-100">Catch up on <em>what matters.</em></h1>
+            <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-slate-400">
               Find the decisions, deadlines, and conversations you missed — without reading every message.
             </p>
-          </div>
-          <div className="hidden lg:block">
-            <div className="hero-rule mb-4" />
-            <p className="text-xs leading-6 text-slate-500">A focused brief from your group chat. Deterministic, private, and entirely on your device.</p>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <div className="mb-8 rounded-2xl border border-white/[0.08] bg-white/[0.025] px-3 py-3 sm:px-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="eyebrow">Your path</span>
-            <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-1">
-              {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center gap-2 sm:flex-1 sm:justify-center">
-                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${step.complete ? 'border-emerald-300/40 bg-emerald-300/10 text-emerald-200' : activeStep === index + 1 ? 'border-violet-300/50 bg-violet-300/10 text-violet-100' : 'border-white/10 text-slate-600'}`}>{step.number}</span>
-                  <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${activeStep === index + 1 ? 'text-slate-100' : step.complete ? 'text-slate-400' : 'text-slate-600'}`}>{step.label}</span>
-                  {index < steps.length - 1 && <span className="hidden h-px flex-1 bg-white/10 sm:block" />}
+        {/* Step indicator */}
+        <div className="mb-8 rounded-xl border border-white/[0.06] bg-white/[0.015] px-4 py-3 sm:px-5">
+          <div className="step-bar">
+            {steps.map((step, index) => (
+              <div key={step.number} className="flex flex-1 items-center gap-2">
+                <div className="step-item">
+                  <span className={`step-dot ${step.complete ? 'is-complete' : activeStep === index + 1 ? 'is-active' : ''}`}>{step.number}</span>
+                  <span className={`step-label ${activeStep === index + 1 ? 'is-active' : step.complete ? 'is-complete' : 'is-default'}`}>{step.label}</span>
                 </div>
-              ))}
-            </div>
+                {index < steps.length - 1 && <span className={`step-connector ${step.complete ? 'is-complete' : ''}`} />}
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,360px)_1fr]">
-          {/* Setup column */}
-          <aside ref={setupRef} className="scroll-mt-6 space-y-4 lg:sticky lg:top-6 lg:self-start">
+        {/* STEP 1 — Choose conversation */}
+        {showStep1 && (
+          <div className="space-y-4 animate-fade-up">
             <ChatSourcePanel onSource={handleSampleSource} selectedSampleId={selectedSampleId} />
-            {result && (
-              <button onClick={handleNewAnalysis} className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-slate-100">
-                Change conversation
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <p className="text-xs text-slate-500">Supported: WhatsApp .txt and .zip exports</p>
+              <button
+                onClick={() => goToStep(2)}
+                disabled={!hasConversation}
+                className="btn-ghost min-h-[40px] px-5 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                Continue
               </button>
-            )}
+            </div>
+            {error && <ErrorBanner message={error} />}
+            {!hasConversation && <EmptyState onTrySample={handleTrySample} />}
+          </div>
+        )}
+
+        {/* STEP 2 — Your details */}
+        {showStep2 && (
+          <div className="space-y-4 animate-fade-up">
+            <div className="glass p-5 sm:p-6">
+              <p className="eyebrow mb-1">Step 02</p>
+              <h2 className="text-lg font-medium text-slate-100">Tell CatchUp who you are</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Your name and aliases help CatchUp find messages that mention you. This stays on your device.
+              </p>
+            </div>
             <ProfileForm value={profile} onChange={setProfile} presetUser={presetUser} />
             <CatchUpControls
               value={since}
@@ -311,42 +348,48 @@ function App() {
               lastMessageTime={lastMessageTime}
               presetSince={presetSince}
             />
-            <button
-              onClick={handleAnalyze}
-              disabled={loading}
-              className="btn-chrome min-h-[48px] w-full px-6 py-3 text-base font-semibold"
-            >
-              {loading ? 'Analysing…' : 'Catch me up'}
-            </button>
-            {result && (
+            {error && <ErrorBanner message={error} />}
+            <div className="flex items-center justify-between gap-3 pt-2">
               <button
-                onClick={handleReset}
-                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition-all hover:bg-white/10"
+                onClick={() => goToStep(1)}
+                className="btn-ghost min-h-[44px] px-5 py-2 text-sm font-medium"
               >
-                Analyse another conversation
+                Back
               </button>
-            )}
-            <SavedBriefs />
-            <PrivacyPanel onClearSaved={handleClearSaved} />
-          </aside>
+              <button
+                onClick={handleAnalyze}
+                disabled={loading}
+                className="btn-chrome min-h-[44px] px-7 py-2.5 text-sm font-semibold"
+              >
+                {loading ? 'Analysing…' : 'Catch me up'}
+              </button>
+            </div>
+          </div>
+        )}
 
-          {/* Brief column */}
-          <section ref={resultsRef} aria-live="polite" aria-label="Analysis results" className="min-w-0 scroll-mt-6 space-y-5">
-            {result && (
-              <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 sm:px-5">
-                <div>
-                  <p className="eyebrow">03 / Your brief</p>
-                  <p className="mt-1 text-sm text-slate-300">A focused view of what you missed.</p>
-                </div>
-                <button onClick={handleNewAnalysis} className="shrink-0 rounded-lg border border-white/15 bg-white/[0.07] px-3 py-2 text-xs font-semibold text-slate-100 transition hover:bg-white/[0.13]">
-                  <span aria-hidden="true">← </span>New analysis
+        {/* STEP 3 — Results */}
+        {showStep3 && (
+          <div ref={resultsRef} aria-live="polite" aria-label="Analysis results" className="space-y-5 animate-fade-up">
+            {/* Results header */}
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="eyebrow">Your brief</p>
+                <h2 className="mt-1 text-xl font-medium tracking-[-0.02em] text-slate-100">Here's what you missed</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={handleNewAnalysis} className="btn-ghost min-h-[36px] px-3 py-1.5 text-xs font-semibold">
+                  New analysis
+                </button>
+                <button onClick={handleChangeConversation} className="btn-ghost min-h-[36px] px-3 py-1.5 text-xs font-semibold">
+                  Change conversation
                 </button>
               </div>
-            )}
+            </div>
+
             {error && <ErrorBanner message={error} />}
 
             {info && !error && (
-              <div className="rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 backdrop-blur-md">
+              <div className="rounded-xl border border-amber-400/20 bg-amber-500/[0.08] px-4 py-3 text-sm text-amber-300">
                 {info}
               </div>
             )}
@@ -360,15 +403,9 @@ function App() {
               </div>
             )}
 
-            {!loading && !result && !error && (
-              <EmptyState onTrySample={handleTrySample} />
-            )}
-
             {!loading && result && (
-              <div className="space-y-6">
-                <div className="animate-fade-up">
-                  <BriefSummary result={result} userName={profile.name} />
-                </div>
+              <div className="space-y-5">
+                <BriefSummary result={result} userName={profile.name} />
 
                 <AiSummaryPanel
                   summary={aiSummary}
@@ -382,22 +419,19 @@ function App() {
                 />
 
                 {result.doFirst.length > 0 && (
-                  <div className="animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-                      <DoFirst
-                      items={result.doFirst}
-                      userName={profile.name}
-                      aliases={aliasesArray}
-                      onViewInChat={(item) => setSourceTarget(item.messageIndex)}
-                    />
-                  </div>
+                  <DoFirst
+                    items={result.doFirst}
+                    userName={profile.name}
+                    aliases={aliasesArray}
+                    onViewInChat={(item) => setSourceTarget(item.messageIndex)}
+                  />
                 )}
 
-                <div className="space-y-3 animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+                <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className="eyebrow">02 / Your brief</span>
+                    <span className="eyebrow">All flagged messages</span>
                     <div className="hero-rule flex-1" />
                   </div>
-                  <h2 className="text-2xl font-medium tracking-[-0.03em] text-slate-100">Everything that needs your attention.</h2>
                   <FilterChips
                     items={result.items}
                     active={activeFilter}
@@ -411,17 +445,31 @@ function App() {
                   />
                 </div>
 
-                <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
-                  <LowSignalList items={result.lowSignal} />
+                <LowSignalList items={result.lowSignal} />
+
+                {/* Secondary panels */}
+                <div className="space-y-4 pt-4">
+                  <div className="hero-rule" />
+                  <SavedBriefs />
+                  <PrivacyPanel onClearSaved={handleClearSaved} />
                 </div>
               </div>
             )}
-          </section>
-        </div>
+          </div>
+        )}
+
+        {/* Persistent saved briefs + privacy on step 1 */}
+        {showStep1 && (
+          <div className="mt-8 space-y-4">
+            <div className="hero-rule" />
+            <SavedBriefs />
+            <PrivacyPanel onClearSaved={handleClearSaved} />
+          </div>
+        )}
       </main>
 
-      <footer className="relative z-10 border-t border-white/[0.04] py-6">
-        <div className="mx-auto max-w-6xl px-4">
+      <footer className="relative z-10 border-t border-white/[0.04] py-5">
+        <div className="mx-auto max-w-3xl px-4">
           <p className="text-center text-xs text-slate-600">
             Local analysis runs on your device. AI summaries send conversation text to the configured Gemini provider. Only saved brief summaries are stored.
           </p>

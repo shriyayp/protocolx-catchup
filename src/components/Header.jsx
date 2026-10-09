@@ -1,19 +1,17 @@
 function Header() {
   return (
-    <header className="relative z-40 border-b border-white/[0.08] bg-black/20 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-10">
+    <header className="relative z-40 border-b border-white/[0.06] bg-black/30 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3.5 sm:px-8">
         <div className="flex items-center gap-3">
-          <div className="chrome-badge flex h-10 w-10 items-center justify-center rounded-[13px]" aria-hidden="true">
-            <span className="text-lg font-black tracking-[-0.12em] text-slate-900">C<span className="opacity-60">/</span></span>
+          <div className="chrome-badge flex h-9 w-9 items-center justify-center rounded-[11px]" aria-hidden="true">
+            <span className="text-base font-black tracking-[-0.1em] text-slate-900">C<span className="opacity-50">/</span></span>
           </div>
           <div>
-            <h1 className="text-base font-semibold tracking-[0.18em] text-slate-100">CATCHUP</h1>
-            <p className="eyebrow mt-0.5 text-[9px] tracking-[0.22em]">Conversation intelligence</p>
+            <h1 className="text-sm font-semibold tracking-[0.16em] text-slate-100">CATCHUP</h1>
+            <p className="eyebrow mt-0.5 text-[8px] tracking-[0.2em]">Conversation intelligence</p>
           </div>
         </div>
-        <div className="hidden items-center gap-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 sm:flex">
-          <span>Private by design</span>
-          <span className="h-1 w-1 rounded-full bg-slate-600" />
+        <div className="hidden items-center gap-4 text-[10px] font-medium uppercase tracking-[0.16em] text-slate-600 sm:flex">
           <span>On-device analysis</span>
         </div>
       </div>

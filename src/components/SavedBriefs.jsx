@@ -1,7 +1,3 @@
-/**
- * SavedBriefs — Lists previously saved briefs from the database.
- * Shows title, stats, and created date. Allows delete and view full text.
- */
 import { useState, useEffect } from 'react'
 import { fetchBriefs, deleteBrief } from '../services/savedBriefs.js'
 
@@ -54,7 +50,7 @@ function SavedBriefs() {
   if (loading) {
     return (
       <div className="glass p-4">
-        <p className="text-xs text-slate-500">Loading saved briefs…</p>
+        <p className="text-xs text-slate-600">Loading saved briefs…</p>
       </div>
     )
   }
@@ -62,13 +58,11 @@ function SavedBriefs() {
   return (
     <div className="glass p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-          Saved briefs
-        </h3>
+        <h3 className="eyebrow">Saved briefs</h3>
         {briefs.length > 0 && (
           <button
             onClick={load}
-            className="text-xs text-violet-300 hover:text-violet-200"
+            className="text-xs text-violet-300/80 hover:text-violet-200"
           >
             Refresh
           </button>
@@ -80,7 +74,7 @@ function SavedBriefs() {
       )}
 
       {briefs.length === 0 && !error ? (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs leading-5 text-slate-600">
           No saved briefs yet. Click "Save brief" after analysing a chat to store the summary here.
         </p>
       ) : (
@@ -88,32 +82,32 @@ function SavedBriefs() {
           {briefs.map((b) => (
             <div
               key={b.id}
-              className="rounded-xl border border-white/5 bg-white/[0.03] p-3"
+              className="rounded-xl border border-white/[0.04] bg-white/[0.02] p-3"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="truncate text-sm font-medium text-slate-200">{b.title}</p>
-                  <p className="mt-0.5 text-xs text-slate-500">
+                  <p className="mt-0.5 text-xs text-slate-600">
                     {formatStats(b.stats_json)} · {formatDate(b.created_at)}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <button
                     onClick={() => setExpandedId(expandedId === b.id ? null : b.id)}
-                    className="text-xs text-violet-300 hover:text-violet-200"
+                    className="text-xs text-violet-300/80 hover:text-violet-200"
                   >
                     {expandedId === b.id ? 'Hide' : 'View'}
                   </button>
                   <button
                     onClick={() => handleDelete(b.id)}
-                    className="text-xs text-red-400 hover:text-red-300"
+                    className="text-xs text-red-400/80 hover:text-red-300"
                   >
                     Delete
                   </button>
                 </div>
               </div>
               {expandedId === b.id && (
-                <pre className="mt-3 max-h-60 overflow-y-auto whitespace-pre-wrap rounded-lg bg-black/20 p-3 text-xs text-slate-400">
+                <pre className="mt-3 max-h-60 overflow-y-auto whitespace-pre-wrap rounded-lg bg-black/15 p-3 text-xs leading-5 text-slate-500">
                   {b.brief_text}
                 </pre>
               )}

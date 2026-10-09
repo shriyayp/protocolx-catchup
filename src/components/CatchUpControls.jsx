@@ -1,6 +1,3 @@
-/**
- * CatchUpControls — Glass datetime input with presets relative to last message.
- */
 import { useState, useEffect } from 'react'
 
 function formatLocalDateTime(date) {
@@ -16,7 +13,6 @@ function formatLocalDateTime(date) {
 function CatchUpControls({ value, onChange, lastMessageTime, presetSince }) {
   const [preset, setPreset] = useState('')
 
-  // Prefill from sample selection
   useEffect(() => {
     if (presetSince) {
       const d = new Date(presetSince)
@@ -57,7 +53,7 @@ function CatchUpControls({ value, onChange, lastMessageTime, presetSince }) {
   ]
 
   return (
-    <div className="glass p-4">
+    <div className="glass p-5">
       <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-400">
         I last read at
       </label>
@@ -70,7 +66,7 @@ function CatchUpControls({ value, onChange, lastMessageTime, presetSince }) {
           setPreset('custom')
         }}
         aria-label="Date and time you last read the chat"
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-slate-100 focus:border-violet-400/40 focus:outline-none [color-scheme:dark]"
+        className="w-full rounded-xl border border-white/[0.08] bg-black/20 px-3.5 py-2.5 text-sm text-slate-100 focus:border-violet-400/30 focus:outline-none [color-scheme:dark]"
       />
       <div className="mt-3 flex flex-wrap gap-2">
         {presets.map((p) => (
@@ -78,10 +74,10 @@ function CatchUpControls({ value, onChange, lastMessageTime, presetSince }) {
             key={p.id}
             onClick={() => applyPreset(p.id)}
             aria-pressed={preset === p.id}
-            className={`min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+            className={`min-h-[34px] rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
               preset === p.id
-                ? 'bg-violet-500/20 text-violet-200 ring-1 ring-violet-400/30'
-                : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200'
+                ? 'bg-violet-500/15 text-violet-200 ring-1 ring-violet-400/25'
+                : 'bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-slate-200'
             }`}
           >
             {p.label}
@@ -89,7 +85,7 @@ function CatchUpControls({ value, onChange, lastMessageTime, presetSince }) {
         ))}
       </div>
       {!lastMessageTime && (
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-slate-600">
           Load a chat first to enable presets.
         </p>
       )}

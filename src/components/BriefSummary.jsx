@@ -1,10 +1,15 @@
-/**
- * BriefSummary — Glass panel showing big "N unread -> M matter" with ratio bar,
- * summary sentence, "Copy brief" button, and "Save brief" button.
- */
 import { useState } from 'react'
 import { exportBrief } from '../services/briefExporter.js'
 import { saveBrief } from '../services/savedBriefs.js'
+
+function StatTile({ value, label }) {
+  return (
+    <div className="stat-tile">
+      <span className="text-xl font-bold tracking-tight text-slate-100">{value}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</span>
+    </div>
+  )
+}
 
 function BriefSummary({ result, userName }) {
   const [copyStatus, setCopyStatus] = useState('')
@@ -58,60 +63,50 @@ function BriefSummary({ result, userName }) {
   }
 
   return (
-    <div className="glass p-5 animate-fade-up">
+    <div className="glass p-5 sm:p-6 animate-fade-up">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <span className="eyebrow text-[9px]">Local analysis · on-device</span>
-        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">Deterministic</span>
-      </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-4xl font-bold tracking-tight text-slate-100">
-          {stats.unread}
-        </span>
-        <span className="text-base text-slate-500">unread</span>
-        <span className="text-xl text-slate-600">&rarr;</span>
-        <span className="text-4xl font-bold tracking-tight chrome-text">
-          {stats.matter}
-        </span>
-        <span className="text-base text-slate-500">matter</span>
+        <span className="eyebrow">Local analysis · on-device</span>
+        <span className="rounded-full border border-white/[0.06] bg-white/[0.03] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-500">Deterministic</span>
       </div>
 
-      {/* CSS-only ratio bar */}
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/5">
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-3">
+        <StatTile value={stats.unread} label="Unread" />
+        <StatTile value={stats.matter} label="Matter" />
+        <StatTile value={stats.mentions} label="Mentions" />
+      </div>
+
+      {/* Ratio bar */}
+      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.04]">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-violet-500 to-sky-400 transition-all duration-200"
+          className="h-full rounded-full bg-gradient-to-r from-violet-500/70 to-sky-400/70 transition-all duration-300"
           style={{ width: `${matterPct}%` }}
         />
       </div>
 
-      <p className="mt-4 text-sm text-slate-400">{summarySentence}</p>
+      <p className="mt-4 text-sm leading-6 text-slate-400">{summarySentence}</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           onClick={handleCopy}
-          className="min-h-[36px] rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition-all hover:bg-white/10"
+          className="btn-ghost min-h-[36px] px-4 py-2 text-sm font-medium"
         >
           Copy brief
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="min-h-[36px] rounded-lg border border-violet-400/30 bg-violet-500/15 px-4 py-2 text-sm font-medium text-violet-200 transition-all hover:bg-violet-500/25 disabled:opacity-50"
+          className="min-h-[36px] rounded-xl border border-violet-400/20 bg-violet-500/10 px-4 py-2 text-sm font-medium text-violet-200 transition-all hover:bg-violet-500/20 disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save brief'}
         </button>
         {copyStatus && (
-          <span
-            className={`text-xs ${copyStatus.includes('fail') ? 'text-red-400' : 'text-violet-300'}`}
-            role="status"
-          >
+          <span className={`text-xs ${copyStatus.includes('fail') ? 'text-red-400' : 'text-violet-300'}`} role="status">
             {copyStatus}
           </span>
         )}
         {saveStatus && (
-          <span
-            className={`text-xs ${saveStatus.includes('fail') ? 'text-red-400' : 'text-emerald-300'}`}
-            role="status"
-          >
+          <span className={`text-xs ${saveStatus.includes('fail') ? 'text-red-400' : 'text-emerald-300'}`} role="status">
             {saveStatus}
           </span>
         )}

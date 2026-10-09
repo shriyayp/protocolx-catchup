@@ -1,25 +1,21 @@
-/**
- * PrivacyPanel — Glass privacy notice with "Clear saved data" button.
- */
 function PrivacyPanel({ onClearSaved }) {
   return (
-    <div className="glass px-4 py-3">
+    <div className="glass px-4 py-3.5">
       <div className="flex items-start gap-2">
-        <span className="mt-0.5 text-sm text-violet-300">&#128274;</span>
+        <span className="mt-0.5 text-sm text-violet-300/80">&#128274;</span>
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-200">
-            Everything runs in your browser. Your chat is never uploaded.
+          <p className="text-sm font-medium text-slate-300">
+            Local analysis runs on your device
           </p>
-          <p className="mt-1 text-xs text-slate-400">
-            To verify: open DevTools &rarr; Network, click "Catch me up",
-            and watch for zero requests.
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            Your chat text is never uploaded during local analysis. AI summaries send conversation text to the configured Gemini provider only after you approve.
           </p>
         </div>
       </div>
       {onClearSaved && (
         <button
           onClick={onClearSaved}
-          className="mt-3 min-h-[36px] rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-white/10"
+          className="btn-ghost mt-3 min-h-[34px] px-3 py-1.5 text-xs font-medium"
         >
           Clear saved data
         </button>
