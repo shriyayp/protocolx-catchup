@@ -15,9 +15,11 @@ import PrivacyPanel from './components/PrivacyPanel.jsx'
 import EmptyState from './components/EmptyState.jsx'
 import ErrorBanner from './components/ErrorBanner.jsx'
 import SavedBriefs from './components/SavedBriefs.jsx'
+import AiSummaryPanel from './components/AiSummaryPanel.jsx'
 
 import { parseChat } from './services/chatParser.js'
 import { analyzeChat } from './services/analyzer.js'
+import { generateAiSummary } from './services/aiSummarizer.js'
 import sampleChats from './data/sampleChats.js'
 
 const MAX_MESSAGES = 5000
@@ -36,6 +38,13 @@ function App() {
   const [presetUser, setPresetUser] = useState('')
   const [presetSince, setPresetSince] = useState('')
   const [selectedSampleId, setSelectedSampleId] = useState('')
+  const [aiSummary, setAiSummary] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiProgress, setAiProgress] = useState(null)
+  const [aiError, setAiError] = useState('')
+  const [aiConsent, setAiConsent] = useState(false)
+  const aiAbortRef = useRef(null)
+  const aiJobIdRef = useRef(0)
   const setupRef = useRef(null)
   const resultsRef = useRef(null)
 
@@ -58,6 +67,9 @@ function App() {
     setError('')
     setInfo('')
     setResult(null)
+    setAiSummary(null)
+    setAiError('')
+    setAiProgress(null)
     setActiveFilter('all')
     if (sampleId) setSelectedSampleId(sampleId)
     if (user) {
@@ -110,10 +122,54 @@ function App() {
     }, 300)
   }
 
+  const handleGenerateAi = async () => {
+    if (!aiConsent || messages.length === 0 || aiLoading) return
+    if (aiAbortRef.current) aiAbortRef.current.abort()
+    const jobId = ++aiJobIdRef.current
+    const controller = new AbortController()
+    aiAbortRef.current = controller
+    setAiLoading(true)
+    setAiError('')
+    setAiSummary(null)
+    setAiProgress({ current: 0, total: 1, label: 'Preparing the conversation…' })
+    try {
+      const aliases = profile.aliases.split(',').map((alias) => alias.trim()).filter(Boolean)
+      const summary = await generateAiSummary({
+        messages,
+        userName: profile.name.trim(),
+        aliases,
+        localItems: result?.items || [],
+        onProgress: setAiProgress,
+        signal: controller.signal,
+      })
+      if (jobId !== aiJobIdRef.current) return
+      setAiSummary(summary)
+    } catch (error) {
+      if (jobId !== aiJobIdRef.current) return
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setAiError('AI summarisation was cancelled. Your local analysis is still available.')
+      } else {
+        setAiError(error instanceof Error ? error.message : 'AI summarisation failed. Your local analysis is still available.')
+      }
+    } finally {
+      if (jobId === aiJobIdRef.current) {
+        setAiLoading(false)
+        aiAbortRef.current = null
+      }
+    }
+  }
+
+  const handleCancelAi = () => {
+    if (aiAbortRef.current) aiAbortRef.current.abort()
+  }
+
   const handleAnalyze = () => {
     setError('')
     setInfo('')
     setResult(null)
+    setAiSummary(null)
+    setAiError('')
+    setAiProgress(null)
 
     if (messages.length === 0) {
       setError('Please load a chat first (sample, paste, or upload).')
@@ -158,6 +214,9 @@ function App() {
 
   const handleNewAnalysis = () => {
     setResult(null)
+    setAiSummary(null)
+    setAiError('')
+    setAiProgress(null)
     setError('')
     setInfo('')
     setActiveFilter('all')
@@ -167,6 +226,9 @@ function App() {
 
   const handleReset = () => {
     setResult(null)
+    setAiSummary(null)
+    setAiError('')
+    setAiProgress(null)
     setError('')
     setInfo('')
     setMessages([])
@@ -308,6 +370,17 @@ function App() {
                   <BriefSummary result={result} userName={profile.name} />
                 </div>
 
+                <AiSummaryPanel
+                  summary={aiSummary}
+                  loading={aiLoading}
+                  progress={aiProgress}
+                  error={aiError}
+                  consent={aiConsent}
+                  onConsentChange={setAiConsent}
+                  onGenerate={handleGenerateAi}
+                  onCancel={handleCancelAi}
+                />
+
                 {result.doFirst.length > 0 && (
                   <div className="animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
                       <DoFirst
@@ -350,7 +423,7 @@ function App() {
       <footer className="relative z-10 border-t border-white/[0.04] py-6">
         <div className="mx-auto max-w-6xl px-4">
           <p className="text-center text-xs text-slate-600">
-            CatchUp analyzes raw chat on your device. Only saved brief summaries leave your browser.
+            Local analysis runs on your device. AI summaries send conversation text to the configured Gemini provider. Only saved brief summaries are stored.
           </p>
         </div>
       </footer>

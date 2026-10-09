@@ -59,6 +59,10 @@ function BriefSummary({ result, userName }) {
 
   return (
     <div className="glass p-5 animate-fade-up">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <span className="eyebrow text-[9px]">Local analysis · on-device</span>
+        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-500">Deterministic</span>
+      </div>
       <div className="flex items-baseline gap-2">
         <span className="text-4xl font-bold tracking-tight text-slate-100">
           {stats.unread}

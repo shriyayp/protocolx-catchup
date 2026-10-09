@@ -1,0 +1,2 @@
+[functions.summarize-chat]
+verify_jwt = false
