@@ -247,10 +247,13 @@ function App() {
 
             {!loading && result && (
               <div className="space-y-6">
-                <BriefSummary result={result} userName={profile.name} />
+                <div className="animate-fade-up">
+                  <BriefSummary result={result} userName={profile.name} />
+                </div>
 
                 {result.doFirst.length > 0 && (
-                  <DoFirst
+                  <div className="animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+                    <DoFirst
                     items={result.doFirst}
                     userName={profile.name}
                     aliases={aliasesArray}
@@ -258,7 +261,7 @@ function App() {
                   />
                 )}
 
-                <div className="space-y-3">
+                <div className="space-y-3 animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
                   <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-300">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-sky-400" />
                     All flagged messages
@@ -276,7 +279,9 @@ function App() {
                   />
                 </div>
 
-                <LowSignalList items={result.lowSignal} />
+                <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+                  <LowSignalList items={result.lowSignal} />
+                </div>
               </div>
             )}
           </section>

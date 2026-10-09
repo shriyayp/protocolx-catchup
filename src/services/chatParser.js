@@ -26,14 +26,11 @@ iOS:
 [09/10/26, 10:15:32 AM] Ananya: Hello team`
 
 // System lines that don't have a "Sender:" pattern are ignored.
+// System hints — only checked when no "Sender:" pattern exists.
 const SYSTEM_HINTS = [
   'messages are end-to-end encrypted',
-  'joined',
-  'left',
   'changed the subject',
   'created group',
-  'added',
-  'removed',
   'security code changed',
   "you'll need to",
   'tap to',
@@ -46,9 +43,13 @@ const SYSTEM_HINTS = [
   'gif omitted',
 ]
 
+// Words like "joined", "left", "added", "removed" are only treated as system
+// lines when there is no colon (no sender). This avoids skipping real messages
+// like "Rahul: I left my charger at home".
 function isSystemLine(rest) {
   // No colon means no sender -> system line
   if (!rest.includes(':')) return true
+  // With a colon, only skip known system notices that wouldn't come from a user
   const lower = rest.toLowerCase()
   return SYSTEM_HINTS.some((h) => lower.includes(h))
 }

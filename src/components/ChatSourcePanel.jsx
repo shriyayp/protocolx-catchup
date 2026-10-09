@@ -86,12 +86,21 @@ function ChatSourcePanel({ onSource, selectedSampleId }) {
                   isSelected ? 'ring-1 ring-violet-400/40' : ''
                 }`}
               >
-                <div className="font-semibold text-sm text-slate-100">{s.title}</div>
-                <div className="mt-0.5 text-xs text-slate-400">{s.tagline}</div>
-                <div className="mt-1.5 flex items-center gap-2">
-                  <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                    {msgCount} messages
-                  </span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm text-slate-100">{s.title}</div>
+                    <div className="mt-0.5 text-xs text-slate-400">{s.tagline}</div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+                        {msgCount} messages
+                      </span>
+                      {isSelected && (
+                        <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300">
+                          Loaded
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </button>
             )

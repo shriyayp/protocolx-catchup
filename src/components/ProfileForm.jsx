@@ -2,7 +2,9 @@
  * ProfileForm — Glass input panel for user name and aliases.
  * Controlled component: parent owns the state.
  */
-function ProfileForm({ value, onChange }) {
+function ProfileForm({ value, onChange, presetUser }) {
+  // presetUser is handled by parent via setProfile; this prop is accepted
+  // for interface consistency but not needed in this controlled component.
   const handleNameChange = (e) => {
     onChange({ name: e.target.value, aliases: value.aliases })
   }

@@ -85,10 +85,14 @@ body {
 .glass-interactive:hover {
   border-color: var(--glass-border-bright);
   background: rgba(255, 255, 255, 0.10);
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .glass-interactive:active {
-  transform: scale(0.99);
+  transform: scale(0.99) translateY(0);
 }
 
 /* Chrome / liquid-metal accent text */
@@ -183,6 +187,16 @@ body {
 
 .animate-fade-up {
   animation: fade-up 400ms ease-out forwards;
+}
+
+/* Staggered entrance for result children */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 300ms ease-out forwards;
 }
 
 /* Focus ring — visible on dark glass */
