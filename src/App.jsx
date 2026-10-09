@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import './App.css'
 
 import Header from './components/Header.jsx'
@@ -36,6 +36,8 @@ function App() {
   const [presetUser, setPresetUser] = useState('')
   const [presetSince, setPresetSince] = useState('')
   const [selectedSampleId, setSelectedSampleId] = useState('')
+  const setupRef = useRef(null)
+  const resultsRef = useRef(null)
 
   // Load saved name from localStorage
   useEffect(() => {
@@ -56,6 +58,7 @@ function App() {
     setError('')
     setInfo('')
     setResult(null)
+    setActiveFilter('all')
     if (sampleId) setSelectedSampleId(sampleId)
     if (user) {
       setPresetUser(user)
@@ -98,6 +101,7 @@ function App() {
       const analysis = analyzeChat({ messages: msgs, userName: name, aliases: als, since: sinceDate })
       setResult(analysis)
       setLoading(false)
+      requestAnimationFrame(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
       if (analysis.stats.unread === 0) {
         setInfo('No unread messages in the selected time window. Try widening the range.')
       } else if (analysis.stats.mentions === 0 && analysis.stats.deadlines === 0) {
@@ -152,6 +156,15 @@ function App() {
     runAnalysis(parsed.messages, s.defaultUser, [], sinceDate)
   }
 
+  const handleNewAnalysis = () => {
+    setResult(null)
+    setError('')
+    setInfo('')
+    setActiveFilter('all')
+    setSourceTarget(null)
+    requestAnimationFrame(() => setupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
   const handleReset = () => {
     setResult(null)
     setError('')
@@ -170,6 +183,14 @@ function App() {
   }, [result, activeFilter])
 
   const aliasesArray = profile.aliases.split(',').map((a) => a.trim()).filter((a) => a.length > 0)
+  const hasConversation = messages.length > 0
+  const hasDetails = profile.name.trim().length > 0 && Boolean(since)
+  const activeStep = result || loading ? 3 : hasConversation ? 2 : 1
+  const steps = [
+    { number: '01', label: 'Choose conversation', complete: hasConversation },
+    { number: '02', label: 'Your details', complete: hasDetails },
+    { number: '03', label: 'Your brief', complete: Boolean(result) },
+  ]
 
   return (
     <div className="bg-midnight min-h-screen text-slate-200">
@@ -197,16 +218,30 @@ function App() {
           </div>
         </section>
 
-        <div className="mb-8 flex items-center gap-4">
-          <span className="eyebrow">Workspace</span>
-          <div className="hero-rule flex-1" />
-          <span className="text-[10px] uppercase tracking-[0.16em] text-slate-600">01 — 02</span>
+        <div className="mb-8 rounded-2xl border border-white/[0.08] bg-white/[0.025] px-3 py-3 sm:px-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span className="eyebrow">Your path</span>
+            <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-1">
+              {steps.map((step, index) => (
+                <div key={step.number} className="flex items-center gap-2 sm:flex-1 sm:justify-center">
+                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${step.complete ? 'border-emerald-300/40 bg-emerald-300/10 text-emerald-200' : activeStep === index + 1 ? 'border-violet-300/50 bg-violet-300/10 text-violet-100' : 'border-white/10 text-slate-600'}`}>{step.number}</span>
+                  <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${activeStep === index + 1 ? 'text-slate-100' : step.complete ? 'text-slate-400' : 'text-slate-600'}`}>{step.label}</span>
+                  {index < steps.length - 1 && <span className="hidden h-px flex-1 bg-white/10 sm:block" />}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,360px)_1fr]">
           {/* Setup column */}
-          <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <aside ref={setupRef} className="scroll-mt-6 space-y-4 lg:sticky lg:top-6 lg:self-start">
             <ChatSourcePanel onSource={handleSampleSource} selectedSampleId={selectedSampleId} />
+            {result && (
+              <button onClick={handleNewAnalysis} className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-slate-100">
+                Change conversation
+              </button>
+            )}
             <ProfileForm value={profile} onChange={setProfile} presetUser={presetUser} />
             <CatchUpControls
               value={since}
@@ -234,7 +269,18 @@ function App() {
           </aside>
 
           {/* Brief column */}
-          <section aria-live="polite" aria-label="Analysis results" className="min-w-0 space-y-5">
+          <section ref={resultsRef} aria-live="polite" aria-label="Analysis results" className="min-w-0 scroll-mt-6 space-y-5">
+            {result && (
+              <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 sm:px-5">
+                <div>
+                  <p className="eyebrow">03 / Your brief</p>
+                  <p className="mt-1 text-sm text-slate-300">A focused view of what you missed.</p>
+                </div>
+                <button onClick={handleNewAnalysis} className="shrink-0 rounded-lg border border-white/15 bg-white/[0.07] px-3 py-2 text-xs font-semibold text-slate-100 transition hover:bg-white/[0.13]">
+                  <span aria-hidden="true">← </span>New analysis
+                </button>
+              </div>
+            )}
             {error && <ErrorBanner message={error} />}
 
             {info && !error && (
